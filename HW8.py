@@ -20,10 +20,13 @@ def load_rest_data(db):
     c = conn.cursor()
 
     rest_data = {}
-    c.execute("SELECT name, category_id, building_id, rating FROM restaurants")
-    rest_rows = c.fetchall()
-    
-    pprint.pprint(rows)
+    c.execute('''SELECT restaurants.name AS restaurant_name, categories.category AS category_name, buildings.building AS building_name, restaurants.rating
+              FROM restaurants
+              INNER JOIN categories ON restaurants.category_id = categories.id
+              INNER JOIN buildings ON restaurants.building_id = buildings.id''')
+    rows = c.fetchall()
+
+    #pprint.pprint(rows)
     for row in rows:
         rest_name = row[0]
         category = row[1]
@@ -33,7 +36,7 @@ def load_rest_data(db):
     
     conn.close()
     return rest_data
-load_rest_data('South_U_Restaurants.db')
+#load_rest_data('South_U_Restaurants.db')
 
 
 def plot_rest_categories(db):
