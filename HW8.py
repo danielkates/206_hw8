@@ -19,7 +19,7 @@ def load_rest_data(db):
     c = conn.cursor()
 
     rest_data = {}
-    c.execute("SELECT name, category, building, rating FROM restaurants")
+    c.execute("SELECT name, category_id, building_id, rating FROM restaurants")
     rows = c.fetchall()
     for row in rows:
         rest_name = row[0]
@@ -41,7 +41,7 @@ def plot_rest_categories(db):
     c = conn.cursor()
 
     cat_data = {}
-    c.execute("SELECT category, COUNT(*) FROM restaurants GROUP BY category")
+    c.execute("SELECT category_id, COUNT(*) FROM restaurants GROUP BY category")
     rows = c.fetchall()
     for row in rows:
         category = row[0]
