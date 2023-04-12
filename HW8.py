@@ -66,7 +66,17 @@ def find_rest_in_building(building_num, db):
     restaurant names. You need to find all the restaurant names which are in the specific building. The restaurants 
     should be sorted by their rating from highest to lowest.
     '''
-    pass
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+
+    restaurant_list = []
+    c.execute("SELECT name FROM restaurants WHERE building=? ORDER BY rating DESC", (building_num,))
+    rows = c.fetchall()
+    for row in rows:
+        restaurant_list.append(row[0])
+    
+    conn.close()
+    return restaurant_list
 
 #EXTRA CREDIT
 def get_highest_rating(db): #Do this through DB as well
