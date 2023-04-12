@@ -21,6 +21,7 @@ def load_rest_data(db):
     rest_data = {}
     c.execute("SELECT name, category_id, building_id, rating FROM restaurants")
     rows = c.fetchall()
+    print(rows)
     for row in rows:
         rest_name = row[0]
         category = row[1]
@@ -30,6 +31,8 @@ def load_rest_data(db):
     
     conn.close()
     return rest_data
+load_rest_data('South_U_Restaurants.db')
+
 
 def plot_rest_categories(db):
     """
@@ -41,7 +44,7 @@ def plot_rest_categories(db):
     c = conn.cursor()
 
     cat_data = {}
-    c.execute("SELECT category_id, COUNT(*) FROM restaurants GROUP BY category")
+    c.execute("SELECT category_id, COUNT(*) FROM restaurants GROUP BY category_id")
     rows = c.fetchall()
     for row in rows:
         category = row[0]
