@@ -45,28 +45,35 @@ def plot_rest_categories(db):
     restaurant categories and the values should be the number of restaurants in each category. The function should
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
+    # Connect to the database and create a cursor
     conn = sqlite3.connect(db)
-    c = conn.cursor()
-
-    cat_data = {}
-    c.execute("SELECT category_id, COUNT(*) FROM restaurants GROUP BY category_id")
-    rows = c.fetchall()
-    for row in rows:
-        category = row[0]
-        count = row[1]
-        cat_data[category] = count
+    cur = conn.cursor()
     
+    # Execute the query to get the category counts
+    cur.execute('''SELECT categories.category, COUNT(restaurants.id)
+                   FROM restaurants
+                   JOIN categories ON restaurants.category_id = categories.id
+                   GROUP BY categories.category
+                   ORDER BY COUNT(restaurants.id) DESC''')
+    
+    # Extract the results and create the dictionary
+    cat_data = {}
+    for row in cur.fetchall():
+        cat_data[row[0]] = row[1]
+    
+    # Close the database connection
     conn.close()
-
-    # Plot bar chart
-    plt.bar(cat_data.keys(), cat_data.values())
-    plt.xticks(rotation=90)
-    plt.xlabel('Restaurant Category')
-    plt.ylabel('Number of Restaurants')
-    plt.title('Number of Restaurants per Category')
+    
+    # Plot the categories using a horizontal bar chart
+    plt.barh(list(cat_data.keys()), list(cat_data.values()))
+    plt.title('Restaurant Categories')
+    plt.xlabel('Count')
+    plt.ylabel('Category')
+    plt.gca().invert_yaxis()  # Reverse the y-axis to show categories in descending order
     plt.show()
 
     return cat_data
+
 
 def find_rest_in_building(building_num, db):
     '''
@@ -78,7 +85,12 @@ def find_rest_in_building(building_num, db):
     c = conn.cursor()
 
     restaurant_list = []
-    c.execute("SELECT name FROM restaurants WHERE building=? ORDER BY rating DESC", (building_num,))
+    c.execute('''SELECT restaurants.name, restaurants.rating
+                 FROM restaurants
+                 INNER JOIN buildings ON restaurants.building_id = buildings.id
+                 WHERE buildings.building = ?
+                 ORDER BY restaurants.rating DESC''', (building_num,))
+
     rows = c.fetchall()
     for row in rows:
         restaurant_list.append(row[0])
@@ -100,7 +112,11 @@ def get_highest_rating(db): #Do this through DB as well
     """
     conn = sqlite3.connect(db)
     c = conn.cursor()
-    c.execute("SELECT name, category, building, rating FROM restaurants")
+    c.execute('''SELECT restaurants.name AS restaurant_name, categories.category AS category_name, buildings.building AS building_name, restaurants.rating
+              FROM restaurants
+              INNER JOIN categories ON restaurants.category_id = categories.id
+              INNER JOIN buildings ON restaurants.building_id = buildings.id''')
+
     rows = c.fetchall()
 
     # Create a dictionary to store category and building ratings
