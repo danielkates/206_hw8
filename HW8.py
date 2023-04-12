@@ -90,7 +90,61 @@ def get_highest_rating(db): #Do this through DB as well
     The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
     in descending order (by rating).
     """
-    pass
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+    c.execute("SELECT name, category, building, rating FROM restaurants")
+    rows = c.fetchall()
+
+    # Create a dictionary to store category and building ratings
+    category_ratings = {}
+    building_ratings = {}
+
+    # Iterate through the rows and update the dictionaries
+    for row in rows:
+        name, category, building, rating = row
+        if category in category_ratings:
+            category_ratings[category].append(rating)
+        else:
+            category_ratings[category] = [rating]
+
+        if building in building_ratings:
+            building_ratings[building].append(rating)
+        else:
+            building_ratings[building] = [rating]
+
+    # Calculate the average rating for each category and building
+    avg_category_ratings = {}
+    avg_building_ratings = {}
+    for category, ratings in category_ratings.items():
+        avg_rating = sum(ratings) / len(ratings)
+        avg_category_ratings[category] = avg_rating
+    for building, ratings in building_ratings.items():
+        avg_rating = sum(ratings) / len(ratings)
+        avg_building_ratings[building] = avg_rating
+
+    # Sort the category and building ratings by descending rating
+    sorted_categories = sorted(avg_category_ratings.items(), key=lambda x: x[1], reverse=True)
+    sorted_buildings = sorted(avg_building_ratings.items(), key=lambda x: x[1], reverse=True)
+
+    # Create the bar charts
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    fig.suptitle('Restaurant Ratings')
+    axs[0].barh([x[0] for x in sorted_categories], [x[1] for x in sorted_categories])
+    axs[0].set_xlabel('Average Rating')
+    axs[0].set_ylabel('Category')
+    axs[0].invert_yaxis()
+    axs[1].barh([x[0] for x in sorted_buildings], [x[1] for x in sorted_buildings])
+    axs[1].set_xlabel('Average Rating')
+    axs[1].set_ylabel('Building')
+
+    # Get the highest-rated category and building
+    highest_category = sorted_categories[0][0]
+    highest_category_rating = sorted_categories[0][1]
+    highest_building = sorted_buildings[0][0]
+    highest_building_rating = sorted_buildings[0][1]
+
+    # Return the results
+    return [(highest_category, highest_category_rating), (highest_building, highest_building_rating)]
 
 #Try calling your functions here
 def main():
