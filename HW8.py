@@ -148,7 +148,16 @@ def get_highest_rating(db): #Do this through DB as well
 
 #Try calling your functions here
 def main():
-    pass
+    db = 'South_U_Restaurants.db'
+    rest_data = load_rest_data(db)
+    cat_data = plot_rest_categories(db)
+    building_num = 1140
+    building_restaurants = find_rest_in_building(building_num, db)
+    highest_rating = get_highest_rating(db)
+    print("Restaurant data:", rest_data)
+    print("Category data:", cat_data)
+    print("Restaurants in building {}: {}".format(building_num, building_restaurants))
+    print("Highest rating:", highest_rating)
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
