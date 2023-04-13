@@ -112,64 +112,43 @@ def get_highest_rating(db): #Do this through DB as well
     """
     conn = sqlite3.connect(db)
     c = conn.cursor()
-    c.execute('''SELECT restaurants.name AS restaurant_name, categories.category AS category_name, buildings.building AS building_name, restaurants.rating
-              FROM restaurants
-              INNER JOIN categories ON restaurants.category_id = categories.id
-              INNER JOIN buildings ON restaurants.building_id = buildings.id''')
 
-    rows = c.fetchall()
+    # get highest rated category
+    c.execute('SELECT category, ROUND(AVG(rating), 1) as avg_rating FROM restaurants JOIN categories ON restaurants.category_id = categories.id GROUP BY category ORDER BY avg_rating DESC LIMIT 1')
+    highest_category = c.fetchone()
 
-    # Create a dictionary to store category and building ratings
-    category_ratings = {}
-    building_ratings = {}
+    # plot bar chart for category ratings
+    plt.subplot(211)
+    c.execute('SELECT category, ROUND(AVG(rating), 1) as avg_rating FROM restaurants JOIN categories ON restaurants.category_id = categories.id GROUP BY category ORDER BY avg_rating ASC')
+    categories = c.fetchall()
+    category_names = [category[0] for category in categories]
+    avg_ratings = [category[1] for category in categories]
+    plt.barh(category_names, avg_ratings)
+    plt.title('Average Restaurant Ratings by Category')
+    plt.xlabel('Rating')
+    plt.ylabel('Category')
+    plt.xlim(0, 5)
 
-    # Iterate through the rows and update the dictionaries
-    for row in rows:
-        name, category, building, rating = row
-        if category in category_ratings:
-            category_ratings[category].append(rating)
-        else:
-            category_ratings[category] = [rating]
+    # get highest rated building
+    c.execute('SELECT building, ROUND(AVG(rating), 1) as avg_rating FROM restaurants JOIN buildings ON restaurants.building_id = buildings.id GROUP BY building ORDER BY avg_rating DESC LIMIT 1')
+    highest_building = c.fetchone()
 
-        if building in building_ratings:
-            building_ratings[building].append(rating)
-        else:
-            building_ratings[building] = [rating]
+    # plot bar chart for building ratings
+    plt.subplot(212)
+    c.execute('SELECT building, ROUND(AVG(rating), 1) as avg_rating FROM restaurants JOIN buildings ON restaurants.building_id = buildings.id GROUP BY building ORDER BY avg_rating ASC')
+    buildings = c.fetchall()
+    building_names = [str(building[0]) for building in buildings] # convert building numbers to strings
+    avg_ratings = [building[1] for building in buildings]
+    plt.barh(building_names, avg_ratings)
+    plt.title('Average Restaurant Ratings by Building')
+    plt.xlabel('Rating')
+    plt.ylabel('Building')
+    plt.xlim(0, 5)
 
-    # Calculate the average rating for each category and building
-    avg_category_ratings = {}
-    avg_building_ratings = {}
-    for category, ratings in category_ratings.items():
-        avg_rating = sum(ratings) / len(ratings)
-        avg_category_ratings[category] = avg_rating
-    for building, ratings in building_ratings.items():
-        avg_rating = sum(ratings) / len(ratings)
-        avg_building_ratings[building] = avg_rating
+    plt.subplots_adjust(hspace=0.4)
+    plt.show()
 
-    sorted_categories = sorted(avg_category_ratings.items(), key=lambda x: x[1], reverse=True)
-    sorted_buildings = sorted(avg_building_ratings.items(), key=lambda x: x[1], reverse=True)
-
-    # Create the bar charts
-    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-    axs[0].barh([x[0] for x in sorted_categories], [x[1] for x in sorted_categories])
-    axs[0].set_xlabel('Ratings')
-    axs[0].set_ylabel('Categories')
-    axs[0].invert_yaxis()
-    fig.suptitle('Average Restaurant Ratings by Category')
-
-    axs[1].barh([str(x[0]) for x in sorted_buildings if str(x[0]).isnumeric()], [x[1] for x in sorted_buildings if str(x[0]).isnumeric()])
-    axs[1].set_xlabel('Ratings')
-    axs[1].set_ylabel('Building Number')
-    axs[1].set_xlim(0, 5)
-    axs[1].invert_yaxis()
-    fig.suptitle('Average Restaurant Ratings by Building')
-
-    highest_category = sorted_categories[0][0]
-    highest_category_rating = sorted_categories[0][1]
-    highest_building = sorted_buildings[0][0]
-    highest_building_rating = sorted_buildings[0][1]
-
-    return [(highest_category, highest_category_rating), (highest_building, highest_building_rating)]
+    return [(highest_category[0], highest_category[1]), (highest_building[0], highest_building[1])]
 
 #Try calling your functions here
 def main():
