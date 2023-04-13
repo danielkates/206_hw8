@@ -146,28 +146,29 @@ def get_highest_rating(db): #Do this through DB as well
         avg_rating = sum(ratings) / len(ratings)
         avg_building_ratings[building] = avg_rating
 
-    # Sort the category and building ratings by descending rating
     sorted_categories = sorted(avg_category_ratings.items(), key=lambda x: x[1], reverse=True)
     sorted_buildings = sorted(avg_building_ratings.items(), key=lambda x: x[1], reverse=True)
 
     # Create the bar charts
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-    fig.suptitle('Restaurant Ratings')
     axs[0].barh([x[0] for x in sorted_categories], [x[1] for x in sorted_categories])
-    axs[0].set_xlabel('Average Rating')
-    axs[0].set_ylabel('Category')
+    axs[0].set_xlabel('Ratings')
+    axs[0].set_ylabel('Categories')
     axs[0].invert_yaxis()
-    axs[1].barh([x[0] for x in sorted_buildings], [x[1] for x in sorted_buildings])
-    axs[1].set_xlabel('Average Rating')
-    axs[1].set_ylabel('Building')
+    fig.suptitle('Average Restaurant Ratings by Category')
 
-    # Get the highest-rated category and building
+    axs[1].barh([str(x[0]) for x in sorted_buildings if str(x[0]).isnumeric()], [x[1] for x in sorted_buildings if str(x[0]).isnumeric()])
+    axs[1].set_xlabel('Ratings')
+    axs[1].set_ylabel('Building Number')
+    axs[1].set_xlim(0, 5)
+    axs[1].invert_yaxis()
+    fig.suptitle('Average Restaurant Ratings by Building')
+
     highest_category = sorted_categories[0][0]
     highest_category_rating = sorted_categories[0][1]
     highest_building = sorted_buildings[0][0]
     highest_building_rating = sorted_buildings[0][1]
 
-    # Return the results
     return [(highest_category, highest_category_rating), (highest_building, highest_building_rating)]
 
 #Try calling your functions here
@@ -177,11 +178,11 @@ def main():
     cat_data = plot_rest_categories(db)
     building_num = 1140
     building_restaurants = find_rest_in_building(building_num, db)
-    highest_rating = get_highest_rating(db)
-    print("Restaurant data:", rest_data)
-    print("Category data:", cat_data)
-    print("Restaurants in building {}: {}".format(building_num, building_restaurants))
-    print("Highest rating:", highest_rating)
+    # highest_rating = get_highest_rating(db)
+    # print("Restaurant data:", rest_data)
+    # print("Category data:", cat_data)
+    # print("Restaurants in building {}: {}".format(building_num, building_restaurants))
+    # print("Highest rating:", highest_rating)
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
